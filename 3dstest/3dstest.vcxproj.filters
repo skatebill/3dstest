@@ -24,7 +24,7 @@
     <ClInclude Include="targetver.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Model3DSPharser.h">
+    <ClInclude Include="Model3DSPhraser.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -35,7 +35,7 @@
     <ClCompile Include="3dstest.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Model3DSPharser.cpp">
+    <ClCompile Include="Model3DSPhraser.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

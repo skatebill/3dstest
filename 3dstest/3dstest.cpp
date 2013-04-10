@@ -7,8 +7,9 @@
 #include <malloc.h>
 #include <list>
 #include <vector>
-#include "Model3DSPharser.h"
-using namespace modelpharser;
+#include <fstream>
+#include "Model3DSPhraser.h"
+using namespace modelphraser;
 struct Point3f{
 	float x,y,z;
 	Point3f(float _x=0,float _y=0,float _z=0){x=_x;y=_y;z=_z;}
@@ -32,11 +33,24 @@ struct meshgroup{
 	vector<triangleface*> faceList;
 	vector<faceWmat*> fwmList;
 };
-class test:public Model3DSPharser{
+struct colorByte{
+	BYTE r,g,b;
+	colorByte(BYTE _r=0,BYTE _g=0,BYTE _b=0){r=_r;b=_b;g=_g;}
+};
+struct matrial{
+	colorByte dif;
+	colorByte spec;
+	colorByte abm;
+	char name[64];
+	char texcoordName[64];
+};
+class test:public Model3DSPhraser{
 private:
 	list<meshgroup*> m_GroupList;
+	vector<matrial*> matriallist;
 	meshgroup* mCurGroup;
-	faceWmat* mCurMat;
+	faceWmat* mCurMatFace;
+	matrial* mCurMat;
 protected:	
 		virtual void meshGroupStart(char* meshName)
 		{
@@ -59,16 +73,48 @@ protected:
 			mCurGroup->faceList.push_back(new triangleface(a,b,c));
 		}
 		virtual void meshMatBegin(char* matName){
-			mCurMat = new faceWmat;
-			strcpy(mCurMat->name,matName);
+			mCurMatFace = new faceWmat;
+			strcpy(mCurMatFace->name,matName);
 
 		}
 		virtual void meshMatEnd(char* matName){
-			mCurGroup->fwmList.push_back(mCurMat);
-			mCurMat=0;
+			mCurGroup->fwmList.push_back(mCurMatFace);
+			mCurMatFace=0;
 		}
 		virtual void usingMatFace(int index){
-			mCurMat->triangleList.push_back(index);
+			mCurMatFace->triangleList.push_back(index);
+		}
+		virtual void matrialBegin(){
+			mCurMat=new matrial;
+		}
+		virtual void matrialEnd(){
+			matriallist.push_back(mCurMat);
+			mCurMat=0;
+		}
+		virtual void matrialName(char* name){
+			strcpy(mCurMat->name,name);
+
+		}
+		virtual void matrialtextureName(char* name){
+			strcpy(mCurMat->texcoordName,name);
+
+		}
+		virtual void matrialAmb3b(BYTE r,BYTE g,BYTE b){
+			mCurMat->abm.r=r;
+			mCurMat->abm.g=g;
+			mCurMat->abm.b=b;
+		}
+		virtual void matrialDif3b(BYTE r,BYTE g,BYTE b){
+			mCurMat->dif.r=r;
+			mCurMat->dif.g=g;
+			mCurMat->dif.b=b;
+
+		}
+		virtual void matrialSpec3b(BYTE r,BYTE g,BYTE b){
+			mCurMat->spec.r=r;
+			mCurMat->spec.g=g;
+			mCurMat->spec.b=b;
+
 		}
 public:
 	test(){};
@@ -92,12 +138,23 @@ public:
 			}
 			ite++;
 		}
+		
+		cout<<"MAT num: "<<matriallist.size()<<endl;
+		vector<matrial*>::iterator matite= matriallist.begin();
+			int n=0;
+		while(matite!= matriallist.end())
+		{
+			cout<<"\tmartrial #"<<n<<" name: "<<(*matite)->name<<endl;
+			cout<<"\t\t texname: "<<(*matite)->texcoordName<<endl;
+			matite++;n++;
+		}
 	}
 
 };
 int _tmain(int argc, _TCHAR* argv[])
 {
 	test t;
+	freopen("log.txt", "w", stdout);
 	bool r=t.loadFile(L"test2.3DS");
 	t.yeld();
 	return 0;

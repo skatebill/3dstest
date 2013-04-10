@@ -1,0 +1,5 @@
+Bip01	65535
+Bip01 Foot	0
+Bip01 Pelv	0
+Bip01 Spin	2
+Bip01 Spi0	3

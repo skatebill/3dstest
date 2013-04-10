@@ -11,8 +11,9 @@ using namespace std;
 #define DWORD	unsigned int
 #define CHUNK_HEAD_L 6
 #define CHUNKL(x)	x.length-6
+#define SKIP5WORDS()	readWord();readWord();readWord();readWord();readWord()
 
-namespace modelpharser{
+namespace modelphraser{
 	
 	//begin primary chunk
 	const WORD PRIM =0x4D4D;
@@ -67,7 +68,7 @@ namespace modelpharser{
 		WORD	id;
 		DWORD	length;
 	};
-	class Model3DSPharser
+	class Model3DSPhraser
 	{
 	private:
 		FILE*	m_pFile;
@@ -153,6 +154,9 @@ namespace modelpharser{
 		virtual void matrialName(char* name){
 
 		}
+		virtual void matrialtextureName(char* name){
+
+		}
 		virtual void matrialAmb3b(BYTE r,BYTE g,BYTE b){
 
 		}
@@ -162,22 +166,54 @@ namespace modelpharser{
 		virtual void matrialSpec3b(BYTE r,BYTE g,BYTE b){
 
 		}
+
+		virtual void keyMeshStart(){
+
+		}
+		virtual void keyMeshEnd(){
+
+		}
+		virtual void keyMeshName(char* name,int parent){
+			cout<<name<<'\t'<<parent<<endl;
+		}
+		virtual void keyDummyMeshName(char* name){
+			cout<<'\t'<<'\t'<<name<<endl;
+		}
+		virtual void keyFramePivot(float x,float y,float z){
+
+		}
+		virtual void keyFramePos(int frameNum,float x,float y,float z){
+
+		}
+		virtual void keyFrameRotate(int frameNum,float x,float y,float z){
+
+		}
+		virtual void keyFrameScale(int frameNum,float x,float y,float z){
+
+		}
 	public:
-		Model3DSPharser(void);
-		virtual ~Model3DSPharser(void);
+		Model3DSPhraser(void);
+		virtual ~Model3DSPhraser(void);
 
 		bool loadFile(wchar_t* filename);
-		void pharsePrim(CHUNK&);
-		void pharseEdit(CHUNK&);
-		void pharseKey(CHUNK&);
-		void pharseMesh(CHUNK&);
-		void pharseMeshInfo(CHUNK&);
-		void pharseVertex(CHUNK&);
-		void pharseTexcoord(CHUNK&);
-		void pharseFaceInfo(CHUNK&);
-		void pharseFace(CHUNK&);
-		void pharseMatrial(CHUNK&);
+		void phrasePrim(CHUNK&);
+		void phraseEdit(CHUNK&);
+		void phraseKey(CHUNK&);
+		void phraseMesh(CHUNK&);
+		void phraseMeshInfo(CHUNK&);
+		void phraseVertex(CHUNK&);
+		void phraseTexcoord(CHUNK&);
+		void phraseFaceInfo(CHUNK&);
+		void phraseFace(CHUNK&);
+		void phraseMatrial(CHUNK&);
 		void phraseMatMap(CHUNK&);
+		void phraseMatAbm(CHUNK&);
+		void phraseMatDif(CHUNK&);
+		void phraseMatSpec(CHUNK&);
+		void phraseKeyMesh(CHUNK&);
+		void phraseKeyPos(CHUNK&);
+		void phraseKeyRotate(CHUNK&);
+		void phraseKeyScale(CHUNK&);
 	};
 
 }
