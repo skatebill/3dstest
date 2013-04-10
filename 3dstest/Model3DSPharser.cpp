@@ -61,6 +61,59 @@ void Model3DSPharser::pharseEdit(CHUNK& edit){
 		case EDIT_MESH:
 			pharseMesh(chunk);
 			break;
+		case EDIT_MAT:
+			pharseMatrial(chunk);
+			break;
+		default:
+			skipChunk(chunk);
+			break;
+		}
+		count+=chunk.length;
+	}
+
+	m_currentStack.pop();
+}
+
+void Model3DSPharser::pharseMatrial(CHUNK& mat){
+	m_currentStack.push(mat);
+	DWORD count=0;
+	DWORD length=CHUNKL(mat);
+	while(count<length){
+		CHUNK chunk=readChunk();
+		switch(chunk.id){
+		case MAT_NAME:
+			{
+				char name[128];
+				readString(name);
+				int i=0;
+			}
+			break;
+		case MAT_MAP:
+			phraseMatMap(chunk);
+			break;
+		default:
+			skipChunk(chunk);
+			break;
+		}
+		count+=chunk.length;
+	}
+
+	m_currentStack.pop();
+}
+void Model3DSPharser::phraseMatMap(CHUNK& mat){
+	m_currentStack.push(mat);
+	DWORD count=0;
+	DWORD length=CHUNKL(mat);
+	while(count<length){
+		CHUNK chunk=readChunk();
+		switch(chunk.id){
+		case MAP_NAME:
+			{
+				char name[128];
+				readString(name);
+				int i=0;
+			}
+			break;
 		default:
 			skipChunk(chunk);
 			break;

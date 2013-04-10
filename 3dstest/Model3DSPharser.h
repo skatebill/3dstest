@@ -144,7 +144,24 @@ namespace modelpharser{
 		virtual void usingMatFace(int index){
 
 		}
+		virtual void matrialBegin(){
 
+		}
+		virtual void matrialEnd(){
+
+		}
+		virtual void matrialName(char* name){
+
+		}
+		virtual void matrialAmb3b(BYTE r,BYTE g,BYTE b){
+
+		}
+		virtual void matrialDif3b(BYTE r,BYTE g,BYTE b){
+
+		}
+		virtual void matrialSpec3b(BYTE r,BYTE g,BYTE b){
+
+		}
 	public:
 		Model3DSPharser(void);
 		virtual ~Model3DSPharser(void);
@@ -159,6 +176,8 @@ namespace modelpharser{
 		void pharseTexcoord(CHUNK&);
 		void pharseFaceInfo(CHUNK&);
 		void pharseFace(CHUNK&);
+		void pharseMatrial(CHUNK&);
+		void phraseMatMap(CHUNK&);
 	};
 
 }

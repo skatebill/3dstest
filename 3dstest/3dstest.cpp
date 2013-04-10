@@ -5,155 +5,102 @@
 #include <stdio.h>
 #include <iostream>
 #include <malloc.h>
+#include <list>
+#include <vector>
 #include "Model3DSPharser.h"
-using namespace std;
-#define BYTE   unsigned char
-#define WORD	unsigned short
-#define DWORD	unsigned int
-FILE* pFile=0;
-struct CHUNK{
-	WORD	id;
-	DWORD	length;
+using namespace modelpharser;
+struct Point3f{
+	float x,y,z;
+	Point3f(float _x=0,float _y=0,float _z=0){x=_x;y=_y;z=_z;}
 };
-BYTE readByte()
-{
-	BYTE r=0;
-	fread(&r,1,1,pFile);
-	return r;
-}
-WORD readWord()
-{
-	return readByte()+(readByte()<<8);
-}
-DWORD readDWord()
-{
-	return readWord() + (readWord()<<16);
-}
-float readFloat()
-{
-	float r=0;
-	fread(&r,4,1,pFile);
-	return r;
-}
-CHUNK readChunk()
-{
-	CHUNK r;
-	r.id=readWord();
-	r.length=readDWord();
-	return r;
-}
-void skipChunk(CHUNK& t)
-{
-	fseek(pFile,t.length-6,SEEK_CUR);
-}
-int readString(char* out)
-{
-	int i=0;
-	char p=1;
-	while(p)
-	{
-		p=readByte();
-		out[i++]=p;
-	}
-	return i;
-}
+struct Texcoord2f{
+	float u,v;
+	Texcoord2f(float _u=0,float _v=0){u=_u;v=_v;}
+};
+struct triangleface{
+	WORD a,b,c;
+	triangleface(WORD _a=0,WORD _b=0,WORD _c=0){a=_a;b=_b;c=_c;}
+};
+struct faceWmat{	
+	char name[128];
+	vector<WORD> triangleList;
+};
+struct meshgroup{
+	char name[128];
+	vector<Point3f*> pointList;
+	vector<Texcoord2f*> texList;
+	vector<triangleface*> faceList;
+	vector<faceWmat*> fwmList;
+};
+class test:public Model3DSPharser{
+private:
+	list<meshgroup*> m_GroupList;
+	meshgroup* mCurGroup;
+	faceWmat* mCurMat;
+protected:	
+		virtual void meshGroupStart(char* meshName)
+		{
+			mCurGroup=new meshgroup;
+			strcpy(mCurGroup->name,meshName);
+		}
+		virtual void meshGroupEnd(char* meshName)
+		{
+			m_GroupList.push_back(mCurGroup);
+			mCurGroup=0;
+		}
+		virtual void vertex3f(float x,float y,float z)
+		{
+			mCurGroup->pointList.push_back(new Point3f(x,y,z));
+		}
+		virtual void texCoord2f(float u, float v){
+			mCurGroup->texList.push_back(new Texcoord2f(u,v));
+		}
+		virtual void face(int a,int b,int c){
+			mCurGroup->faceList.push_back(new triangleface(a,b,c));
+		}
+		virtual void meshMatBegin(char* matName){
+			mCurMat = new faceWmat;
+			strcpy(mCurMat->name,matName);
 
+		}
+		virtual void meshMatEnd(char* matName){
+			mCurGroup->fwmList.push_back(mCurMat);
+			mCurMat=0;
+		}
+		virtual void usingMatFace(int index){
+			mCurMat->triangleList.push_back(index);
+		}
+public:
+	test(){};
+	virtual ~test(){}
+	void yeld(){
+		list<meshgroup*>::iterator ite=m_GroupList.begin();
+		while(ite!=m_GroupList.end())
+		{
+			cout<<"GROUP name: "<<(*ite)->name<<endl;
+			cout<<"\tpoint num: "<<(*ite)->pointList.size()<<endl;
+			cout<<"\ttexcoord num: "<<(*ite)->texList.size()<<endl;
+			cout<<"\ttriangle num: "<<(*ite)->faceList.size()<<endl;
+			cout<<"\tmaterial num: "<<(*ite)->fwmList.size()<<endl;
+			vector<faceWmat*>::iterator mite=(*ite)->fwmList.begin();
+			int n=0;
+			while(mite!=(*ite)->fwmList.end())
+			{
+				cout<<"\t\tmatrial #"<<n<<"\t name: "<<(*mite)->name<<endl;
+				cout<<"\t\tmatrial #"<<n<<"\t trianleNum: "<<(*mite)->triangleList.size()<<endl;
+				mite++;n++;
+			}
+			ite++;
+		}
+	}
+
+};
 int _tmain(int argc, _TCHAR* argv[])
 {
-	/*pFile=fopen("man.3DS","rb");
-	if(!pFile)
-	{
-		cout<<"error load file!"<<endl;
-	}
-	CHUNK t;
-	t=readChunk();
-	t=readChunk();
-	while(t.id!=0xB000)
-	{
-		skipChunk(t);
-		t=readChunk();
-	}
-	t=readChunk();
-/*	while(t.id!=0xB002)
-	{
-		skipChunk(t);
-		t=readChunk();
-	}
-	t=readChunk();
-	int id = readWord();
-	t=readChunk();
-	while(t.id!=0xB010)
-	{
-		skipChunk(t);
-		t=readChunk();
-	}
-	char s[128];
-	readString(s);
-	readDWord();
-	WORD i=readWord();
-	t=readChunk();
-	float f1=readFloat(),f2=readFloat(),f3=readFloat();
-	t=readChunk();
-	readWord();readWord();readWord();readWord();readWord();
-	int num=readWord();
-	int num2=readWord();
-	for(int i=0;i<num;i++){
-		int w=readWord();
-		readDWord();
-		float f1=readFloat(),f2=readFloat(),f3=readFloat();
-			continue;
-	};
-	t=readChunk();
-	readWord();readWord();readWord();readWord();readWord();
-	num=readWord();
-	num2=readWord();
-	for(int i=0;i<num;i++){
-		int w=readWord();
-		readDWord();
-		float f1=readFloat(),f2=readFloat(),f3=readFloat(),f4=readFloat();
-			continue;
-	};
-	t=readChunk();
-	readWord();readWord();readWord();readWord();readWord();
-	num=readWord();
-	num2=readWord();
-	for(int i=0;i<num;i++){
-		int w=readWord();
-		readDWord();
-		float f1=readFloat(),f2=readFloat(),f3=readFloat();
-			continue;
-	};
-	t=readChunk();
-	t=readChunk();
-	num = readWord();
-	t=readChunk();
-	readString(s);
-	readDWord();
-	i=readWord();*/
-	/*int it=0;
-	char name[128];
-	while(it<16)
-	{
-		while(t.id!=0xB002)
-		{
-			skipChunk(t);
-			t=readChunk();
-		}
-		t=readChunk();
-		while(t.id!=0xB010){
-			skipChunk(t);
-			t=readChunk();
-		}
-		readString(name);
-		readDWord();
-		WORD i=readWord();
-		t=readChunk();
-		cout<<name<<" location:"<<i<<endl;
-		it++;
-	}
-	fclose(pFile);*/
-	modelpharser::Model3DSPharser t;
-	bool r=t.loadFile(L"test.3DS");
+	test t;
+	bool r=t.loadFile(L"test2.3DS");
+	t.yeld();
 	return 0;
 }
+
 
